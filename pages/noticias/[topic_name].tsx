@@ -19,12 +19,10 @@ import { useSubscription } from '../../src/hooks/use-subscription';
 import io, { Socket } from'socket.io-client';
 import { Dropzone } from '../../src/components/dropzone';
 import { useKeenSlider } from "keen-slider/react";
-
-const handleMessage = ( setNews : Dispatch<SetStateAction<string[]>> ) => (data : any) => {
-    console.log("New message");
-    console.log({ data });
-    setNews( oldNews => [...oldNews,data] );
-}
+import { EmptySpace } from '../../src/components/empty-space';
+import { useReceiveNews } from '../../src/hooks/use-receive-news';
+import toast from 'react-hot-toast';
+import { NewsCard } from '../../src/components/news-card';
 
 const NewsTopic : NextPage = () => {
     const router = useRouter();
@@ -32,19 +30,22 @@ const NewsTopic : NextPage = () => {
     const publishForm = useForm();
     const subscriptionForm = useForm();
     const [ images, setImages ] = useState<string[]>([]);
+    const [ publishFormOpen, setPublishFormOpen ] = useState(false);
     const [ saveSubscription ] = useState( () => {
         if(typeof window !== 'undefined' ){
             return localStorage.getItem("subscriptionName");
         }
-        return ""
-    })
-    const [ news, setNews ] = useState<any[]>([]);
-    const { mutate : publishNew } = usePublish();
+        return "";
+    });
+    const [ news ] = useReceiveNews({ 
+        saveSubscription: saveSubscription || "" , 
+        topicName: topic_name as string 
+    });
+    const { mutateAsync : publishNew } = usePublish();
     const { mutate : subscribeToTopic } = useSubscription();
     const { mutate : uploadPhoto, data } = useUploadPhoto();
     const [sliderRef] = useKeenSlider<HTMLDivElement>({ slidesPerView: 3 });
    
-
     useEffect( () => {
         if(data && data?.url ){
             setImages( old => [...old,data.url] );
@@ -53,34 +54,15 @@ const NewsTopic : NextPage = () => {
 
     console.log({news});
 
-    useEffect( () => {
-        let socket : Socket;
-        console.log({saveSubscription});
-        if( saveSubscription ){
-            socket = io('http://localhost:4000/', {
-                withCredentials: true
-            });
-            socket.emit('connect-pubsub',{
-                subcriptionName: saveSubscription,
-                topic: topic_name
-            });
-            socket.on('message', handleMessage(setNews) );
-        }
-        return () => {
-            if(socket){
-                socket.off('message', handleMessage(setNews) );
-                socket.close();
-            }
-        }
-    } , []);
-
-
     const onSubmitNew = publishForm.handleSubmit( data => {
         publishNew({
             title: data.title as string,
             description: data.description as string,
             topic: toCammelCase(topic_name as string),
             images
+        }).then( () => {
+            toast.success("Noticia publicada correctamente");
+            setPublishFormOpen(false);
         })
     })
 
@@ -93,15 +75,14 @@ const NewsTopic : NextPage = () => {
 
     return (
         <Fragment>
-            <div css = {css`
-                background-color: ${theme.palette.primary};
-            `}> 
+            <div className = "next-container"> 
                 <main css = {css`
                     width: 100%;
-                    height: 100%;
+                    min-height: 100%;
                     padding-left: 230px;
                     display: flex;
                     flex-direction: column;
+                    background-color: ${theme.palette.primary};
                 `}>
                     <h1 css = {css`
                         padding: 0 48px;
@@ -116,163 +97,115 @@ const NewsTopic : NextPage = () => {
                         {toCammelCase(topic_name as string || "")}
                         </span>
                     </h1>
-                    <div css = {css`
-                        display: flex;
-                        flex-direction: column;
-                        padding: 48px;
-                        padding-top: 0px;
-                    `}>
-                        <div ref={sliderRef} className="keen-slider" css = {css`
-                            width: 100%;
-                        `}>
-                            {news.reverse().filter( n => n.images?.length ).map( (theNew,index) => {
-                                return(
-                                    <div
-                                        key = {index} 
-                                        className="keen-slider__slide"
-                                        css = {css `
-                                            height: 420px;
-                                            padding: 24px;
-                                        `}
-                                    >   
-                                        <div css = {css`
-                                            width: 100%;
-                                            height: 100%;
-                                            background-color: red;
-                                            background-image: url(${ theNew.images[0] });
-                                            background-size: cover;
-                                            background-position: center;
-                                            display: flex;
-                                            align-items: flex-end;
-                                        `}>
-                                            <div css = {css`
-                                                padding: 18px;
-                                                color: white;
-                                                width: 100%;
-                                                position: relative;
-                                            `}>
-                                                <div
-                                                    css = {css`
-                                                        position: absolute;
-                                                        top: 0; left: 0; right: 0; bottom: 0;
-                                                        width: 100%;
-                                                        height: 100%;
-                                                        z-index: 1;
-                                                        background: linear-gradient(0deg, rgba(0,0,0,1) 47%, rgba(255,255,255,0) 100%);;
-                                                        opacity: 0.2;
-                                                    `}
-                                                />
-                                                <div css = {css`
-                                                    position: relative;
-                                                    z-index: 2;
-                                                `}>
-                                                    <div css = {css`
-                                                        font-size: 18px;
-                                                        font-weight: bold;
-                                                        margin-bottom: 4px;
-                                                    `}>
-                                                        {theNew.title || "I need you now tonight"}
-                                                    </div>
-                                                    <div css = {css`
-                                                        font-size: 12px;
-                                                    `}>
-                                                        {theNew.description}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )
-                            })}
-                        </div>
+                    <EmptySpace show = {!saveSubscription} label = "Subscribete a este tema para empezar a recibir noticias">
                         <div css = {css`
                             display: flex;
-                            margin-top: 48px;
+                            flex-direction: column;
+                            padding: 48px;
+                            padding-top: 0px;
+                            padding-bottom: 0px;
                         `}>
-                            <div css = {css`
-                                margin-right: 24px;
+                            <div ref={sliderRef} className="keen-slider" css = {css`
+                                width: 100%;
                             `}>
-                                <Dialog>
-                                    <DialogTrigger asChild onClick = {() => {
-                                        setImages([]);
-                                        publishForm.reset();
-                                    }}>
-                                        <Button>
-                                            Publicar
-                                        </Button>
-                                    </DialogTrigger>
-                                    <DialogContent>
-                                        <DialogTitle css = {css`
+                                {news.reverse().filter( n => n.images?.length ).map( (theNew,index) => {
+                                    return(
+                                        <NewsCard item = {theNew} key = {index} />
+                                    )
+                                })}
+                            </div>
+                        </div>
+                    </EmptySpace>
+                    <div css = {css`
+                        display: flex;
+                        padding: 48px;
+                    `}>
+                        <div css = {css`
+                            margin-right: 24px;
+                        `}>
+                            <Dialog open = {publishFormOpen} onOpenChange = {(open : boolean) => {
+                                setPublishFormOpen(open);
+                            }}> 
+                                <DialogTrigger asChild onClick = {() => {
+                                    setImages([]);
+                                    publishForm.reset();
+                                }}>
+                                    <Button>
+                                        Publicar
+                                    </Button>
+                                </DialogTrigger>
+                                <DialogContent>
+                                    <DialogTitle css = {css`
+                                        margin-bottom: 16px;
+                                    `}>
+                                        Publicar noticia en { topic_name }
+                                    </DialogTitle>
+                                    <form onSubmit = {onSubmitNew}>
+                                        <div css = {css`
                                             margin-bottom: 16px;
                                         `}>
-                                            Publicar noticia en { topic_name }
-                                        </DialogTitle>
-                                        <form onSubmit = {onSubmitNew}>
-                                            <div css = {css`
-                                                margin-bottom: 16px;
-                                            `}>
-                                                <TextField 
-                                                    label = "Titulo de la noticia"
-                                                    {...publishForm.register("title")}
-                                                />
-                                            </div>
-                                            <div css = {css`
-                                                margin-bottom: 16px;
-                                            `}>
-                                                <TextArea 
-                                                    label = "Contenido de la noticia"
-                                                    rows = {8}
-                                                    {...publishForm.register("description")}
-                                                />
-                                            </div>
-                                            <div>
-                                                <Dropzone label = "Cubierta de la noticia" onDrop = {(newFiles) =>{
-                                                    uploadPhoto({  
-                                                        file: newFiles[0]
-                                                    });
-                                                }} />
-                                            </div>
-                                            <Button type = "submit">
-                                                Finalizar publicacion
-                                            </Button>
-                                        </form>
-                                    </DialogContent>
-                                </Dialog>
-                            </div>
-                            <div>
-                                <Dialog>
-                                    <DialogTrigger asChild>
-                                        <Button>
-                                            Subscribete a este tema
-                                        </Button>
-                                    </DialogTrigger>
-                                    <DialogContent>
-                                        <DialogTitle css = {css`
+                                            <TextField 
+                                                label = "Titulo de la noticia"
+                                                {...publishForm.register("title")}
+                                            />
+                                        </div>
+                                        <div css = {css`
                                             margin-bottom: 16px;
                                         `}>
-                                            Subscribirse a { topic_name }:
-                                        </DialogTitle>
-                                        <DialogDescription>
-                                            Para subscribirte a este tema
-                                            debes dejarnos tu nombre o 
-                                            correo electronico
-                                        </DialogDescription>
-                                        <form onSubmit = {onSubmitSubscription}>
-                                            <div css = {css`
-                                                margin-bottom: 16px;
-                                            `}>
-                                                <TextField 
-                                                    label = "Nombre o correo"
-                                                    {...subscriptionForm.register("subscriptionName")}
-                                                />
-                                            </div>
-                                            <Button type = "submit">
-                                                Subscribirse
-                                            </Button>
-                                        </form>
-                                    </DialogContent>
-                                </Dialog>
-                            </div>
+                                            <TextArea 
+                                                label = "Contenido de la noticia"
+                                                rows = {8}
+                                                {...publishForm.register("description")}
+                                            />
+                                        </div>
+                                        <div>
+                                            <Dropzone label = "Cubierta de la noticia" onDrop = {(newFiles) =>{
+                                                uploadPhoto({  
+                                                    file: newFiles[0]
+                                                });
+                                            }} />
+                                        </div>
+                                        <Button type = "submit">
+                                            Finalizar publicacion
+                                        </Button>
+                                    </form>
+                                </DialogContent>
+                            </Dialog>
+                        </div>
+                        <div>
+                            <Dialog>
+                                <DialogTrigger asChild>
+                                    <Button>
+                                        Subscribete a este tema
+                                    </Button>
+                                </DialogTrigger>
+                                <DialogContent>
+                                    <DialogTitle css = {css`
+                                        margin-bottom: 16px;
+                                    `}>
+                                        Subscribirse a { topic_name }:
+                                    </DialogTitle>
+                                    <DialogDescription>
+                                        Para subscribirte a este tema
+                                        debes dejarnos tu nombre o 
+                                        correo electronico
+                                    </DialogDescription>
+                                    <form onSubmit = {onSubmitSubscription}>
+                                        <div css = {css`
+                                            margin-bottom: 16px;
+                                        `}>
+                                            <TextField 
+                                                label = "Nombre o correo"
+                                                secondaryLabel = {`${ saveSubscription ? "Ya tienes una subscripcion, utiliza el mismo nombre de usuario para que te lluegen las notificaciones de ambos temas" : "" }`}
+                                                {...subscriptionForm.register("subscriptionName", { value: saveSubscription || "" })}
+                                            />
+                                        </div>
+                                        <Button type = "submit">
+                                            Subscribirse
+                                        </Button>
+                                    </form>
+                                </DialogContent>
+                            </Dialog>
                         </div>
                     </div>
                 </main>

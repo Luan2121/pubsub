@@ -4,7 +4,8 @@ import { css, jsx } from '@emotion/react';
 import { ForwardedRef, forwardRef, InputHTMLAttributes } from 'react';
 
 interface TextFieldProps extends InputHTMLAttributes<HTMLInputElement> {
-    label ?: string
+    label ?: string,
+    secondaryLabel ?: string
 }
 
 const TextField = forwardRef( (props : TextFieldProps , ref : ForwardedRef<HTMLInputElement> ) => {
@@ -19,10 +20,20 @@ const TextField = forwardRef( (props : TextFieldProps , ref : ForwardedRef<HTMLI
                 padding: 12px 24px;
                 width: 100%;
             }
-            `}>
+
+            & .secondary-label {
+                font-size: 12px;
+                margin-top: 4px;
+            }
+        `}>
             <label>
                 {props.label}
             </label>
+            {props.secondaryLabel && (
+                <div className = "secondary-label">
+                    {props.secondaryLabel}
+                </div>
+            )}
             <input ref = {ref} {...props} />
         </div>
     );

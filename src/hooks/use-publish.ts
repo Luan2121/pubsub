@@ -17,7 +17,8 @@ const usePublish = () => {
                 data: {
                     title,
                     description,
-                    images
+                    images,
+                    topic
                 }
             });
         }

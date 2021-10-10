@@ -11,6 +11,7 @@ const StyledOverlay = styled(DialogPrimitive.Overlay)`
 
 type RootProps = {
     children: ReactNode
+    [key : string]: any
 }
 
 function Root({ children, ...props } : RootProps) {

@@ -5,7 +5,7 @@ import { Global, css, jsx } from '@emotion/react';
 const AppGlobalStyles = () => (
     <Global 
         styles = {css`
-            html, body, #__next, #__next > div, #__next > div > div {
+            html, body, #__next, #__next > div, #__next > .next-container > div {
                 height: 100%;
             }
 

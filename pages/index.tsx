@@ -12,23 +12,35 @@ import { researchers } from '../src/data';
 import { theme } from '../src/theme';
 import { PlusIcon } from '../src/iconography';
 import { useMutateTopic } from '../src/hooks/use-topics';
-
+import { useReceiveNews } from '../src/hooks/use-receive-news';
+import { NewsCard } from '../src/components/news-card';
 const Home: NextPage = () => {
-  const [sliderRef] = useKeenSlider<HTMLDivElement>({ slidesPerView: 3 });
+  const [sliderRef] = useKeenSlider<HTMLDivElement>({ slidesPerView: 2 });
   const { mutate : createTopic, isLoading } = useMutateTopic();
   const [ name , setName ] = useState("");
+  const [ saveSubscription ] = useState( () => {
+    if(typeof window !== 'undefined' ){
+        return localStorage.getItem("subscriptionName") || "";
+    }
+    return "";
+  });
+  const [ news ] = useReceiveNews({ 
+    saveSubscription
+  });
+
+  console.log({ news, saveSubscription });
   return (
     <Fragment>
-      <div css = {css`
-        background-color: ${theme.palette.primary};
-      `}>
+      <div className = "next-container" >
         <Sidebar />
         <main css = {css`
           width: 100%;
-          height: 100%;
+          min-height: 100%;
           padding-left: 230px;
+          padding-bottom: 48px;
           display: flex;
           flex-direction: column;
+          background-color: ${theme.palette.primary};
         `}>
           <h1 css = {css`
             padding: 0 48px;
@@ -128,16 +140,15 @@ const Home: NextPage = () => {
                   VER TODOS
                 </button>
               </div>
-              <div ref={sliderRef} className="keen-slider" css = {css`
-                width: 100%;
-              `}>
-                <div className="keen-slider__slide number-slide1">1</div>
-                <div className="keen-slider__slide number-slide2">2</div>
-                <div className="keen-slider__slide number-slide3">3</div>
-                <div className="keen-slider__slide number-slide4">4</div>
-                <div className="keen-slider__slide number-slide5">5</div>
-                <div className="keen-slider__slide number-slide6">6</div>
-              </div>
+              {!!news.length && (
+                 <div ref={sliderRef} className="keen-slider" css = {css`
+                    width: 100%;
+                  `}>
+                    {news.map( (theNew,index) => (
+                      <NewsCard key = {index} item = {theNew} />
+                    ))}
+                  </div>
+              )}
             </div>
             <Dialog>
                 <DialogTrigger asChild>

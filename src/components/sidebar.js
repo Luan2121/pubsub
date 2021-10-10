@@ -8,8 +8,10 @@ import Image from 'next/image';
 import Link from 'next/link'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './dropdown-menu';
 import MoreEllipsisV from '../iconography/more-ellipsis-v';
+import { useTopics } from '../hooks/use-topics';
 
 const Sidebar = () => {
+    const { data : topics } = useTopics();
     return (
         <aside css = {css`
             width: 230px;
@@ -64,34 +66,15 @@ const Sidebar = () => {
                     margin-bottom: 32px;
                 }
             `}>
-                <li>
-                    <Link href = "/noticias/moda">
-                        <a>
-                            Moda
-                        </a>
-                    </Link>
-                </li>
-                <li>
-                    <Link href = "/noticias/fitness">
-                        <a>
-                            Fitness
-                        </a>
-                    </Link>
-                </li>
-                <li>
-                    <Link href = "/noticias/titulares" >
-                        <a>
-                            Titulares
-                        </a>
-                    </Link>
-                </li>
-                <li>
-                    <Link href = "/noticias/musica">
-                        <a>
-                            Musica
-                        </a>
-                    </Link>
-                </li>
+                {( topics || [] ).map( (topic,index) => (
+                    <li key = {`${topic}-${index}`}>
+                        <Link href = {`/noticias/${topic.name.toLowerCase()}`} >
+                            <a>
+                                {topic.name}
+                            </a>
+                        </Link>
+                    </li>
+                ))}
             </ul>
             <div css = {css`
                 color: ${theme.palette.white};
