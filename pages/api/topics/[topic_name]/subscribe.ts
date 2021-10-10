@@ -3,6 +3,7 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { pubSubClient } from '../../../../src/pubSubClient';
+import { Topic } from '@google-cloud/pubsub';
 
 type Data = {
     message?: string
@@ -16,7 +17,7 @@ export default async function handler(
     const { topic_name } = req.query;
     const [allTopics] = await pubSubClient.getTopics();
     let topicName = "";
-    allTopics.forEach( t => {
+    allTopics.forEach( ( t : Topic ) => {
         const currenTopicName = t.name.split("/").reverse()?.[0];
         if( currenTopicName === topic_name ){
             topicName = currenTopicName;
