@@ -6,17 +6,43 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "serve": "nodemon"
   },
   "dependencies": {
+    "@cloudinary/url-gen": "^1.0.0",
+    "@emotion/react": "^11.4.1",
+    "@emotion/styled": "^11.3.0",
+    "@modulz/radix-icons": "^4.0.0",
+    "@radix-ui/colors": "^0.1.7",
+    "@radix-ui/react-dialog": "^0.1.0",
+    "@radix-ui/react-dropdown-menu": "^0.1.0",
+    "@types/express": "^4.17.13",
+    "@types/multiparty": "^0.0.33",
+    "avro-js": "^1.10.2",
+    "axios": "^0.22.0",
+    "cloudinary": "^1.27.0",
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "isomorphic-fetch": "^3.0.0",
+    "keen-slider": "^5.5.1",
+    "multiparty": "^4.2.2",
     "next": "11.1.2",
+    "next-connect": "^0.10.2",
     "react": "17.0.2",
-    "react-dom": "17.0.2"
+    "react-dom": "17.0.2",
+    "react-dropzone": "^11.4.2",
+    "react-hook-form": "^7.17.2",
+    "react-query": "^3.25.1",
+    "socket.io": "^4.2.0",
+    "socket.io-client": "^4.2.0"
   },
   "devDependencies": {
     "@types/react": "17.0.24",
     "eslint": "7.32.0",
     "eslint-config-next": "11.1.2",
+    "nodemon": "^2.0.13",
+    "ts-node": "^10.2.1",
     "typescript": "4.4.3"
   }
 }
