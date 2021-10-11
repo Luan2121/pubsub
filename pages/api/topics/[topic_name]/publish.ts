@@ -1,7 +1,7 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import type { NextApiRequest, NextApiResponse } from 'next';
+import type { Topic } from '@google-cloud/pubsub';
 import { pubSubClient } from '../../../../src/pubSubClient';
-import { Topic } from '@google-cloud/pubsub';
 
 type Data = {
     message?: string
