@@ -1,7 +1,16 @@
 {
     "functions": {
-        "api/*": {
+        "api/topics/[topic_name]/index.ts": {
           "includeFiles": "_files/**"
+        },
+        "api/topics/[topic_name]/publish.ts": {
+            "includeFiles": "_files/**"
+        },
+        "api/topics/[topic_name]/subscribe.ts": {
+            "includeFiles": "_files/**"
+        },
+        "api/topics/index.ts": {
+            "includeFiles": "_files/**"
         }
     }
 }
